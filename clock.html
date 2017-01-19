@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>clock练习</title>
+    <style>
+        div {
+            width: 1000px;
+            height: 600px;
+            margin: 0 auto;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <canvas id="canvas" width="600" height="400"></canvas>
+</div>
+<script>
+    function toAngle( radian ) {
+        return 180 * radian / Math.PI;
+    }
+    function toRadian( angle ) {
+        return Math.PI * angle / 180;
+    }
+    var canvas = document.getElementById('canvas'),
+            ctx = canvas.getContext('2d');
+
+   function render(){
+       //画布的宽，高
+       var w=canvas.width,h=canvas.height;
+       //矩形的宽高
+       var rw=316,rh=316;
+       //矩形的圆角的半径
+       var cr=40;
+       //清除画布
+       ctx.clearRect(0,0,w,h);
+       //清除画布之后要立即保存
+       ctx.save();
+       ctx.translate(w/2,h/2);
+       //圆弧的起始点
+       //逆时针画圆弧
+       ctx.beginPath();
+       ctx.moveTo(-rw/2,-rh/2+cr);
+       ctx.arcTo(-rw/2,rh/2,rw/2,rh/2,cr);
+       ctx.arcTo(rw/2,rh/2,rw/2,-rh/2,cr);
+       ctx.arcTo(rw/2,-rh/2,-rw/2,-rh/2,cr);
+       ctx.arcTo(-rw/2,-rh/2,-rw/2,-rh/2+cr,cr);
+//    ctx.stroke();
+       //圆（表盘）的半径是150
+       //顺时针画圆
+//    ctx.beginPath();
+       ctx.arc(0,0,150,0,2*Math.PI);
+//    ctx.stroke();
+       ctx.fillStyle='pink';
+       ctx.fill();
+       //绘制小时刻度
+       ctx.lineWidth='4';
+       for(var i=0;i<12;i++){
+           ctx.save();
+           //每180度有6个小格格
+           ctx.rotate(i*Math.PI/6);
+           ctx.beginPath();
+           //圆的半径
+           ctx.moveTo(150,0);
+           //从外向着圆心画圆
+           ctx.lineTo(150-16,0);
+           ctx.strokeStyle='orange';
+           ctx.stroke();
+           ctx.restore();
+           ctx.textAlign='cneter';
+           ctx.textBaseline='middle';
+           ctx.font='Bold 20px Consolas';
+           ctx.beginPath();
+           ctx.fillStyle='yellowgreen';
+           ctx.fillText(i+3>12?i+3-12:i+3,(150-16-15)*Math.cos(i*Math.PI/6),(150-16-15)*Math.sin(i*Math.PI/6));
+       }
+
+       //绘制分针和秒针的刻度
+       ctx.save();
+       ctx.lineWidth='3';
+       for(var i=0;i<60;i++){
+           //遇到时针的刻度就跳过去
+           if(i%5!==0){
+               ctx.beginPath();
+               ctx.moveTo(150,0);
+               ctx.lineTo(150-12,0);
+               ctx.strokeStyle='rgba(0,255,255,.8)';
+               ctx.stroke();
+           }
+           //180度是有30个小格格
+           ctx.rotate(Math.PI/30);
+       }
+       ctx.restore();
+//添加品牌
+       ctx.fillStyle='red';
+       ctx.fillText("Clock", -25, -150 + 16 + 10 + 32);
+
+       //绘制时分秒的指针
+       var now=new Date;
+       var hour=now.getHours(),
+               min=now.getMinutes(),
+               sec=now.getSeconds();
+       //x,y表示的是横纵坐标，时分秒的指针的长度
+       var x, y,hourR=60,minR=80,secR=100;
+       ctx.lineCap='round';
+       //将起始的角度转成-90度
+       ctx.rotate(-Math.PI/2);
+       //以上内容记得要保存
+       ctx.save();
+       //绘制时针的指针
+       //先判断是不是超过12,就是将时间转成12进制
+       hour=hour>12?hour-12:hour;
+       //时针不光在整点的时候转动，在分针和秒针转的时候，时针也会转动的
+       //hour+min/60+sec/3600
+       // Math.PI*(hour+min/60+sec/3600)/6表示的是时针转的角度
+       x=hourR*Math.cos(Math.PI*(hour+min/60+sec/3600)/6);
+       y=hourR*Math.sin(Math.PI*(hour+min/60+sec/3600)/6);
+       ctx.beginPath();
+       ctx.lineWidth='6';
+       ctx.strokeStyle='rgba(255,255,0,.8)';
+       ctx.moveTo(0,0);
+       ctx.lineTo(x,y);
+       ctx.stroke();
+
+       //绘制分针的指针
+       //min+sec/60
+       //Math.PI*(min+sec/60)/30
+       x=minR*Math.cos(Math.PI*(min+sec/60)/30);
+       y=minR*Math.sin(Math.PI*(min+sec/60)/30);
+       ctx.beginPath();
+       ctx.lineWidth='4';
+       ctx.strokeStyle='rgba(255,0,255,.8)';
+       ctx.moveTo(0,0);
+       ctx.lineTo(x,y);
+       ctx.stroke();
+
+       //绘制秒针的指针
+       x=secR*Math.cos(Math.PI*sec/30);
+       y=secR*Math.sin(Math.PI*sec/30);
+       ctx.beginPath();
+       ctx.lineWidth='2';
+       ctx.strokeStyle='red';
+//       ctx.moveTo(0,0);
+       //让向着相反方向同比例缩放
+       ctx.moveTo(-x/8,-y/8);
+       ctx.lineTo(x,y);
+       ctx.stroke();
+       ctx.beginPath();
+       ctx.arc(0,0,6,0,2*Math.PI);
+       ctx.fill();
+       ctx.restore();
+
+       ctx.restore();//这个回复的是清除画布的状态
+       window.requestAnimationFrame(render);
+   }
+    window.requestAnimationFrame(render);
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
